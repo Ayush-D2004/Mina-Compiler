@@ -1,4 +1,4 @@
-# Toy Compiler for the `Mina` Language
+# Toy Compiler for `Mina` Programming Language
 
 ## This project implements a complete but small compiler pipeline for a hypothetical language named **Mina**.
 
