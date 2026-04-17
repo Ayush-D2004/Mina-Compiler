@@ -1,0 +1,16 @@
+proc square(x: num) : num {
+    give x * x;
+}
+
+proc main() : void {
+    show("Enter a number:");
+    let n: num <- ask();
+
+    show("Square:", square(n));
+
+    when (n % 2 == 0) {
+        show("Even number");
+    } otherwise {
+        show("Odd number");
+    }
+}

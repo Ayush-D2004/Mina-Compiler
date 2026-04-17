@@ -1,0 +1,176 @@
+Ayush@DESKTOP-ONOSB3R MINGW64 /d/compiler/toy_compiler_project
+$ rm -f parser.tab.* lex.yy.c toycompiler
+
+Ayush@DESKTOP-ONOSB3R MINGW64 /d/compiler/toy_compiler_project
+$ bison -d parser.y
+
+Ayush@DESKTOP-ONOSB3R MINGW64 /d/compiler/toy_compiler_project
+$ flex lexer.l
+
+Ayush@DESKTOP-ONOSB3R MINGW64 /d/compiler/toy_compiler_project
+$ gcc -std=c11 -Wall -Wextra -g -o toycompiler parser.tab.c lex.yy.c ast.c symbol_table.c semantic.c ir.c optimize.c codegen.c runtime.c main.c -lm
+lex.yy.c:1466:16: warning: 'input' defined but not used [-Wunused-function]
+ 1466 | #else
+      |                ^
+lex.yy.c:1419:17: warning: 'yyunput' defined but not used [-Wunused-function]
+ 1419 |
+      |                 ^
+ir.c:236:20: warning: 'kind_name' defined but not used [-Wunused-function]
+  236 | static const char *kind_name(IRKind k) {
+      |                    ^~~~~~~~~
+ir.c:79:12: warning: 'is_int_like' defined but not used [-Wunused-function]
+   79 | static int is_int_like(double v) {
+      |            ^~~~~~~~~~~
+optimize.c:30:17: warning: 'opt_list_node' defined but not used [-Wunused-function]
+   30 | static ASTNode *opt_list_node(ASTNode *n) {
+      |                 ^~~~~~~~~~~~~
+runtime.c:81:13: warning: 'sb_append' defined but not used [-Wunused-function]
+   81 | static void sb_append(StrBuf *sb, const char *s) {
+      |             ^~~~~~~~~
+
+Ayush@DESKTOP-ONOSB3R MINGW64 /d/compiler/toy_compiler_project
+$ cat sample.mina
+proc square(x: num) : num {
+    give x * x;
+}
+
+proc main() : void {
+    show("Enter a number:");
+    let n: num <- ask();
+
+    show("Square:", square(n));
+
+    when (n % 2 == 0) {
+        show("Even number");
+    } otherwise {
+        show("Odd number");
+    }
+}
+Ayush@DESKTOP-ONOSB3R MINGW64 /d/compiler/toy_compiler_project
+$ ./toycompiler sample.mina
+==== AST ====
+PROGRAM
+  FUNC square : num
+    PARAM x : num
+    BLOCK
+      GIVE
+        BINOP *
+          VAR x
+          VAR x
+  FUNC main : void
+    BLOCK
+      SHOW
+        STRING Enter a number:
+      LET n : num
+        CALL ask
+      SHOW
+        STRING Square:
+        CALL square
+          VAR n
+      WHEN
+        BINOP ==
+          BINOP %
+            VAR n
+            NUM 2
+          NUM 0
+        BLOCK
+          SHOW
+            STRING Even number
+      OTHERWISE
+        BLOCK
+          SHOW
+            STRING Odd number
+==== OPTIMIZED AST ====
+PROGRAM
+  FUNC square : num
+    PARAM x : num
+    BLOCK
+      GIVE
+        BINOP *
+          VAR x
+          VAR x
+  FUNC main : void
+    BLOCK
+      SHOW
+        STRING Enter a number:
+      LET n : num
+        CALL ask
+      SHOW
+        STRING Square:
+        CALL square
+          VAR n
+      WHEN
+        BINOP ==
+          BINOP %
+            VAR n
+            NUM 2
+          NUM 0
+        BLOCK
+          SHOW
+            STRING Even number
+      OTHERWISE
+        BLOCK
+          SHOW
+            STRING Odd number
+==== 3 ADDRESS CODE ====
+FUNC square
+  t1 = x * x
+  return t1
+ENDFUNC square
+FUNC main
+  print #0
+  t2 = read()
+  n = t2
+  print #0
+  t3 = n % #2
+  t4 = t3 == #0
+  ifz t4 goto L1
+  print #0
+  goto L2
+L1:
+  print #0
+L2:
+ENDFUNC main
+==== TARGET CODE ====
+FUNC square
+    LOAD x
+    LOAD x
+    MUL
+    STORE t1
+    LOAD t1
+    RET
+END square
+FUNC main
+    PUSH 0
+    PRINT
+    READ t2
+    LOAD t2
+    STORE n
+    PUSH 0
+    PRINT
+    LOAD n
+    PUSH 2
+    MOD
+    STORE t3
+    LOAD t3
+    PUSH 0
+    EQ
+    STORE t4
+    LOAD t4
+    JZ L1
+    PUSH 0
+    PRINT
+    JMP L2
+L1:
+    PUSH 0
+    PRINT
+L2:
+END main
+==== PROGRAM OUTPUT ====
+Enter a number:
+> 4
+Square: 16
+Even number
+
+Ayush@DESKTOP-ONOSB3R MINGW64 /d/compiler/toy_compiler_project
+$
