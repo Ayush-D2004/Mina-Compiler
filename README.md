@@ -29,12 +29,6 @@ flex lexer.l
 gcc -std=c11 -Wall -Wextra -g -o toycompiler parser.tab.c lex.yy.c ast.c symbol_table.c semantic.c ir.c optimize.c codegen.c runtime.c main.c -lm
 ```
 
-Or just use:
-
-```bash
-make
-```
-
 ## Run
 
 ```bash
